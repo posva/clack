@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from '
 import { dirname, isAbsolute, resolve } from 'node:path';
 import { stdout } from 'node:process';
 import type { Writable } from 'node:stream';
+import { stripVTControlCharacters } from 'node:util';
 import { env, isAgent as stdIsAgent, isTest as stdIsTest } from 'std-env';
 
 export interface AgentAnswerEntry {
@@ -137,10 +138,12 @@ export function getAnswer(id: string, path?: string): AgentAnswerEntry | undefin
 }
 
 /**
- * Recursively drop `null`/`undefined` fields so they don't appear in TOON output.
- * Arrays are preserved; only object properties are pruned.
+ * Recursively drop `null`/`undefined` fields so they don't appear in TOON output,
+ * and strip ANSI escape codes from any string so the session file stays plain
+ * readable text even when callers pass styled prompt messages.
  */
 function prune(value: unknown): unknown {
+	if (typeof value === 'string') return stripVTControlCharacters(value);
 	if (Array.isArray(value)) return value.map(prune);
 	if (value && typeof value === 'object') {
 		const out: Record<string, unknown> = {};

@@ -93,6 +93,24 @@ describe('agent mode', () => {
 			writeFileSync(sessionFile, '{not json', 'utf8');
 			expect(readSession(sessionFile)).toEqual({ version: 1, answers: {} });
 		});
+
+		test('writeSession strips ANSI escape codes from strings', () => {
+			const red = '\u001B[31mhello\u001B[39m';
+			writeSession(
+				{
+					version: 1,
+					answers: { a: { value: red } },
+					pending: [{ id: 'q1', kind: 'text', message: `${red} world` }],
+				},
+				sessionFile
+			);
+			const raw = readFileSync(sessionFile, 'utf8');
+			expect(raw).not.toMatch(/\u001B\[/);
+			expect(JSON.parse(raw)).toMatchObject({
+				answers: { a: { value: 'hello' } },
+				pending: [{ id: 'q1', kind: 'text', message: 'hello world' }],
+			});
+		});
 	});
 
 	describe('protocol emission', () => {
