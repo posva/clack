@@ -1,3 +1,29 @@
+export type {
+	AgentAnswerEntry,
+	AgentQuestion,
+	AgentQuestionKind,
+	AgentSessionFile,
+} from './agent.js';
+export {
+	emitError,
+	emitLog,
+	emitQuestion,
+	emitQuestions,
+	emitTask,
+	exit,
+	getAnswer,
+	getSessionFilePath,
+	isAgentMode,
+	markAnswerConsumed,
+	readSession,
+	resetAutoIdCounter,
+	resetCleanupState,
+	runCleanup,
+	setAgentMode,
+	setCleanupOnExit,
+	setExit,
+	writeSession,
+} from './agent.js';
 export type { AutocompleteOptions } from './prompts/autocomplete.js';
 export { default as AutocompletePrompt } from './prompts/autocomplete.js';
 export type { ConfirmOptions } from './prompts/confirm.js';

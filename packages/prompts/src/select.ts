@@ -6,6 +6,7 @@ import {
 	S_BAR_END,
 	S_RADIO_ACTIVE,
 	S_RADIO_INACTIVE,
+	serializeOptions,
 	symbol,
 	symbolBar,
 } from './common.js';
@@ -70,6 +71,7 @@ export interface SelectOptions<Value> extends CommonOptions {
 	options: Option<Value>[];
 	initialValue?: Value;
 	maxItems?: number;
+	id?: string;
 }
 
 const computeLabel = (label: string, format: (text: string) => string) => {
@@ -112,6 +114,12 @@ export const select = <Value>(opts: SelectOptions<Value>) => {
 		input: opts.input,
 		output: opts.output,
 		initialValue: opts.initialValue,
+		id: opts.id,
+		agent: {
+			message: opts.message,
+			options: serializeOptions(opts.options),
+			initialValue: opts.initialValue,
+		},
 		render() {
 			const hasGuide = opts.withGuide ?? settings.withGuide;
 			const titlePrefix = `${symbol(this.state)}  `;

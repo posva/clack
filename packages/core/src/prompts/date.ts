@@ -1,4 +1,5 @@
 import type { Key } from 'node:readline';
+import type { AgentQuestionKind } from '../agent.js';
 import { settings } from '../utils/settings.js';
 import Prompt, { type PromptOptions } from './prompt.js';
 
@@ -427,5 +428,18 @@ export default class DatePrompt extends Prompt<Date> {
 			};
 		}
 		this.value = toDate(this.#segmentValues) ?? opts.defaultValue ?? undefined;
+	}
+
+	protected override _agentKind(): AgentQuestionKind {
+		return 'date';
+	}
+
+	protected override _coerceAnswer(value: unknown): Date {
+		if (value instanceof Date) return value;
+		if (typeof value === 'string' || typeof value === 'number') {
+			const d = new Date(value);
+			if (!Number.isNaN(d.getTime())) return d;
+		}
+		return new Date(Number.NaN);
 	}
 }

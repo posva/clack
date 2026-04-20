@@ -3,6 +3,21 @@ import readline, { type Key, type ReadLine } from 'node:readline';
 import type { Readable, Writable } from 'node:stream';
 import { wrapAnsi } from 'fast-wrap-ansi';
 import { cursor, erase } from 'sisteransi';
+import {
+	type AgentQuestion,
+	type AgentQuestionKind,
+	emitError,
+	emitQuestion,
+	exit as agentExit,
+	getAnswer,
+	getSessionFilePath,
+	isAgentMode,
+	markAnswerConsumed,
+	nextAutoId,
+	readSession,
+	stashPending,
+	writeSession,
+} from '../agent.js';
 import type { ClackEvents, ClackState } from '../types.js';
 import type { Action } from '../utils/index.js';
 import {
@@ -14,6 +29,13 @@ import {
 	settings,
 } from '../utils/index.js';
 
+export interface AgentDescriptorOverride {
+	message?: string;
+	hint?: string;
+	required?: boolean;
+	[extra: string]: unknown;
+}
+
 export interface PromptOptions<TValue, Self extends Prompt<TValue>> {
 	render(this: Omit<Self, 'prompt'>): string | undefined;
 	initialValue?: any;
@@ -22,6 +44,10 @@ export interface PromptOptions<TValue, Self extends Prompt<TValue>> {
 	input?: Readable;
 	output?: Writable;
 	signal?: AbortSignal;
+	/** Stable identifier used to match answers across re-invocations in agent mode. */
+	id?: string;
+	/** Extra fields merged into the serialized question emitted in agent mode. */
+	agent?: AgentDescriptorOverride;
 }
 
 export default class Prompt<TValue> {
@@ -30,12 +56,13 @@ export default class Prompt<TValue> {
 	private _abortSignal?: AbortSignal;
 
 	private rl: ReadLine | undefined;
-	private opts: Omit<PromptOptions<TValue, Prompt<TValue>>, 'render' | 'input' | 'output'>;
+	protected opts: Omit<PromptOptions<TValue, Prompt<TValue>>, 'render' | 'input' | 'output'>;
 	private _render: (context: Omit<Prompt<TValue>, 'prompt'>) => string | undefined;
 	private _track = false;
 	private _prevFrame = '';
 	private _subscribers = new Map<string, { cb: (...args: any) => any; once?: boolean }[]>();
 	protected _cursor = 0;
+	private _resolvedId: string | undefined;
 
 	public state: ClackState = 'initial';
 	public error = '';
@@ -55,6 +82,44 @@ export default class Prompt<TValue> {
 
 		this.input = input;
 		this.output = output;
+	}
+
+	/** The stable id used to match answers in agent mode. Resolves on first access. */
+	public get id(): string {
+		if (this._resolvedId === undefined) {
+			this._resolvedId = this.opts.id ?? nextAutoId();
+		}
+		return this._resolvedId;
+	}
+
+	/**
+	 * The question kind emitted in agent mode. Subclasses override to set
+	 * 'text' | 'select' | 'multiselect' | etc.
+	 */
+	protected _agentKind(): AgentQuestionKind {
+		return 'text';
+	}
+
+	/**
+	 * Coerce the raw JSON value from the session file into the prompt's value type.
+	 * Default: identity. `DatePrompt` overrides to parse ISO strings.
+	 */
+	protected _coerceAnswer(value: unknown): TValue {
+		return value as TValue;
+	}
+
+	/**
+	 * The serialized question emitted in agent mode. The payload is driven by the
+	 * `opts.agent` overrides supplied by the high-level `@clack/prompts` wrapper
+	 * (which knows the `message` and user-visible options). Core only contributes
+	 * the `id` and `kind`.
+	 */
+	public serialize(): AgentQuestion {
+		return {
+			id: this.id,
+			kind: this._agentKind(),
+			...(this.opts.agent ?? {}),
+		};
 	}
 
 	/**
@@ -121,6 +186,9 @@ export default class Prompt<TValue> {
 	}
 
 	public prompt() {
+		if (isAgentMode()) {
+			return this._agentPrompt();
+		}
 		return new Promise<TValue | symbol | undefined>((resolve) => {
 			if (this._abortSignal) {
 				if (this._abortSignal.aborted) {
@@ -172,6 +240,66 @@ export default class Prompt<TValue> {
 				resolve(CANCEL_SYMBOL);
 			});
 		});
+	}
+
+	/**
+	 * Agent-mode replacement for `prompt()`. Instead of blocking on stdin:
+	 *   1. If the session file already has an answer for this `id`: validate and resolve.
+	 *   2. Otherwise: serialize the question, stash it in the session file as pending,
+	 *      emit it to stdout as NDJSON, and exit with code 2.
+	 *
+	 * The method returns a Promise that only resolves when an answer is already present.
+	 * When no answer is present, the process exits before the Promise can settle.
+	 */
+	protected _agentPrompt(): Promise<TValue | symbol | undefined> {
+		const question = this.serialize();
+		const sessionPath = getSessionFilePath();
+		const answer = getAnswer(question.id, sessionPath);
+
+		if (this._abortSignal?.aborted) {
+			this.state = 'cancel';
+			return Promise.resolve(CANCEL_SYMBOL);
+		}
+
+		if (answer === undefined) {
+			stashPending([question], sessionPath);
+			emitQuestion(question, { output: this.output, sessionFile: sessionPath });
+			agentExit(2);
+			// `agentExit` either kills the process or throws (in tests); unreachable
+			// in both paths but the type system needs a return.
+			return Promise.resolve(undefined);
+		}
+
+		if (answer.cancelled) {
+			markAnswerConsumed();
+			this.state = 'cancel';
+			this.emit('cancel', CANCEL_SYMBOL as never);
+			return Promise.resolve(CANCEL_SYMBOL);
+		}
+
+		markAnswerConsumed();
+		this.value = this._coerceAnswer(answer.value);
+		if (this.opts.validate) {
+			const problem = this.opts.validate(this.value);
+			if (problem) {
+				const msg = problem instanceof Error ? problem.message : String(problem);
+				this.state = 'error';
+				this.error = msg;
+				emitError(question.id, msg, { output: this.output, sessionFile: sessionPath });
+				// Clear the bad answer and re-emit the question so the agent can retry.
+				const session = readSession(sessionPath);
+				delete session.answers[question.id];
+				session.pending = [question];
+				writeSession(session, sessionPath);
+				emitQuestion(question, { output: this.output, sessionFile: sessionPath });
+				agentExit(3);
+				return Promise.resolve(undefined);
+			}
+		}
+		this.state = 'submit';
+		this.emit('finalize');
+		this.emit('submit', this.value as never);
+		return Promise.resolve(this.value);
 	}
 
 	protected _isActionKey(char: string | undefined, _key: Key): boolean {

@@ -1,4 +1,5 @@
 import { cursor } from 'sisteransi';
+import type { AgentQuestionKind } from '../agent.js';
 import Prompt, { type PromptOptions } from './prompt.js';
 
 export interface ConfirmOptions extends PromptOptions<boolean, ConfirmPrompt> {
@@ -34,5 +35,9 @@ export default class ConfirmPrompt extends Prompt<boolean> {
 		this.on('cursor', () => {
 			this.value = !this.value;
 		});
+	}
+
+	protected override _agentKind(): AgentQuestionKind {
+		return 'confirm';
 	}
 }

@@ -1,9 +1,10 @@
 import { styleText } from 'node:util';
-import { block, getColumns, settings } from '@clack/core';
+import { block, emitTask, getColumns, settings } from '@clack/core';
 import { wrapAnsi } from 'fast-wrap-ansi';
 import { cursor, erase } from 'sisteransi';
 import {
 	type CommonOptions,
+	isAgent,
 	isCI as isCIFn,
 	S_BAR,
 	S_STEP_CANCEL,
@@ -45,6 +46,36 @@ export const spinner = ({
 	signal,
 	...opts
 }: SpinnerOptions = {}): SpinnerResult => {
+	if (isAgent()) {
+		let agentCancelled = false;
+		let lastMsg = '';
+		return {
+			start(msg = '') {
+				lastMsg = msg;
+				emitTask('start', msg || undefined, { output });
+			},
+			stop(msg = '') {
+				emitTask('stop', msg || lastMsg || undefined, { output });
+			},
+			cancel(msg = '') {
+				agentCancelled = true;
+				emitTask('stop', msg || cancelMessage || settings.messages.cancel, { output });
+				if (typeof onCancel === 'function') onCancel();
+			},
+			error(msg = '') {
+				emitTask('error', msg || errorMessage || settings.messages.error, { output });
+			},
+			message(msg = '') {
+				lastMsg = msg;
+			},
+			clear() {
+				/* no-op in agent mode */
+			},
+			get isCancelled() {
+				return agentCancelled;
+			},
+		};
+	}
 	const isCI = isCIFn();
 
 	let unblock: () => void;

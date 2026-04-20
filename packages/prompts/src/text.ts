@@ -8,6 +8,7 @@ export interface TextOptions extends CommonOptions {
 	defaultValue?: string;
 	initialValue?: string;
 	validate?: (value: string | undefined) => string | Error | undefined;
+	id?: string;
 }
 
 export const text = (opts: TextOptions) => {
@@ -19,6 +20,14 @@ export const text = (opts: TextOptions) => {
 		output: opts.output,
 		signal: opts.signal,
 		input: opts.input,
+		id: opts.id,
+		agent: {
+			message: opts.message,
+			placeholder: opts.placeholder,
+			defaultValue: opts.defaultValue,
+			initialValue: opts.initialValue,
+			required: opts.validate !== undefined,
+		},
 		render() {
 			const hasGuide = opts?.withGuide ?? settings.withGuide;
 			const titlePrefix = `${hasGuide ? `${styleText('gray', S_BAR)}\n` : ''}${symbol(this.state)}  `;

@@ -8,6 +8,7 @@ import {
 	S_CHECKBOX_SELECTED,
 	S_RADIO_ACTIVE,
 	S_RADIO_INACTIVE,
+	serializeOptions,
 	symbol,
 } from './common.js';
 import { limitOptions } from './limit-options.js';
@@ -78,6 +79,7 @@ export interface AutocompleteOptions<Value> extends AutocompleteSharedOptions<Va
 	 * The initial user input
 	 */
 	initialUserInput?: string;
+	id?: string;
 }
 
 export const autocomplete = <Value>(opts: AutocompleteOptions<Value>) => {
@@ -95,6 +97,15 @@ export const autocomplete = <Value>(opts: AutocompleteOptions<Value>) => {
 		input: opts.input,
 		output: opts.output,
 		validate: opts.validate,
+		id: opts.id,
+		agent: {
+			message: opts.message,
+			placeholder: opts.placeholder,
+			initialValue: opts.initialValue,
+			options: typeof opts.options === 'function' ? undefined : serializeOptions(opts.options),
+			dynamicOptions: typeof opts.options === 'function' || undefined,
+			required: opts.validate !== undefined,
+		},
 		render() {
 			const hasGuide = opts.withGuide ?? settings.withGuide;
 			// Title and message display
@@ -233,6 +244,7 @@ export interface AutocompleteMultiSelectOptions<Value> extends AutocompleteShare
 	 * If true, at least one option must be selected
 	 */
 	required?: boolean;
+	id?: string;
 }
 
 /**
@@ -284,6 +296,16 @@ export const autocompleteMultiselect = <Value>(opts: AutocompleteMultiSelectOpti
 		signal: opts.signal,
 		input: opts.input,
 		output: opts.output,
+		id: opts.id,
+		agent: {
+			message: opts.message,
+			placeholder: opts.placeholder,
+			initialValues: opts.initialValues,
+			options: typeof opts.options === 'function' ? undefined : serializeOptions(opts.options),
+			dynamicOptions: typeof opts.options === 'function' || undefined,
+			required: opts.required === true,
+			multiple: true,
+		},
 		render() {
 			const hasGuide = opts.withGuide ?? settings.withGuide;
 			// Title and symbol

@@ -17,6 +17,15 @@ export const multiline = (opts: MultiLineOptions) => {
 		output: opts.output,
 		signal: opts.signal,
 		input: opts.input,
+		id: opts.id,
+		agent: {
+			message: opts.message,
+			placeholder: opts.placeholder,
+			defaultValue: opts.defaultValue,
+			initialValue: opts.initialValue,
+			showSubmit: opts.showSubmit,
+			required: opts.validate !== undefined,
+		},
 		render() {
 			const hasGuide = opts?.withGuide ?? settings.withGuide;
 			const titlePrefix = `${hasGuide ? `${styleText('gray', S_BAR)}\n` : ''}${symbol(this.state)}  `;

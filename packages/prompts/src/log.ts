@@ -1,7 +1,8 @@
 import { styleText } from 'node:util';
-import { settings } from '@clack/core';
+import { emitLog, settings } from '@clack/core';
 import {
 	type CommonOptions,
+	isAgent,
 	S_BAR,
 	S_ERROR,
 	S_INFO,
@@ -27,6 +28,11 @@ export const log = {
 			withGuide,
 		}: LogMessageOptions = {}
 	) => {
+		if (isAgent()) {
+			const text = Array.isArray(message) ? message.join('\n') : message;
+			emitLog('message', text, { output });
+			return;
+		}
 		const parts: string[] = [];
 		const hasGuide = withGuide ?? settings.withGuide;
 		const spacingString = !hasGuide ? '' : secondarySymbol;

@@ -1,3 +1,4 @@
+import type { AgentQuestionKind } from '../agent.js';
 import Prompt, { type PromptOptions } from './prompt.js';
 
 export interface SelectKeyOptions<T extends { value: string }>
@@ -37,5 +38,9 @@ export default class SelectKeyPrompt<T extends { value: string }> extends Prompt
 				this.emit('submit');
 			}
 		});
+	}
+
+	protected override _agentKind(): AgentQuestionKind {
+		return 'select-key';
 	}
 }

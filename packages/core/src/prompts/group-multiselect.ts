@@ -1,3 +1,4 @@
+import type { AgentQuestionKind } from '../agent.js';
 import Prompt, { type PromptOptions } from './prompt.js';
 
 export interface GroupMultiSelectOptions<T extends { value: any }>
@@ -89,5 +90,9 @@ export default class GroupMultiSelectPrompt<T extends { value: any }> extends Pr
 					break;
 			}
 		});
+	}
+
+	protected override _agentKind(): AgentQuestionKind {
+		return 'group-multiselect';
 	}
 }

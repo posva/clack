@@ -19,6 +19,7 @@ export interface GroupMultiSelectOptions<Value> extends CommonOptions {
 	cursorAt?: Value;
 	selectableGroups?: boolean;
 	groupSpacing?: number;
+	id?: string;
 }
 export const groupMultiselect = <Value>(opts: GroupMultiSelectOptions<Value>) => {
 	const { selectableGroups = true, groupSpacing = 0 } = opts;
@@ -90,6 +91,24 @@ export const groupMultiselect = <Value>(opts: GroupMultiSelectOptions<Value>) =>
 		required,
 		cursorAt: opts.cursorAt,
 		selectableGroups,
+		id: opts.id,
+		agent: {
+			message: opts.message,
+			options: Object.fromEntries(
+				Object.entries(opts.options).map(([g, items]) => [
+					g,
+					items.map((o) => ({
+						value: o.value,
+						label: o.label,
+						hint: o.hint,
+						disabled: o.disabled,
+					})),
+				])
+			),
+			initialValues: opts.initialValues,
+			required,
+			selectableGroups,
+		},
 		validate(selected: Value[] | undefined) {
 			if (required && (selected === undefined || selected.length === 0))
 				return `Please select at least one option.\n${styleText(

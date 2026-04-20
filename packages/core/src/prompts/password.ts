@@ -1,4 +1,5 @@
 import { styleText } from 'node:util';
+import type { AgentQuestionKind } from '../agent.js';
 import Prompt, { type PromptOptions } from './prompt.js';
 
 export interface PasswordOptions extends PromptOptions<string, PasswordPrompt> {
@@ -34,5 +35,9 @@ export default class PasswordPrompt extends Prompt<string> {
 		this.on('userInput', (input) => {
 			this._setValue(input);
 		});
+	}
+
+	protected override _agentKind(): AgentQuestionKind {
+		return 'password';
 	}
 }

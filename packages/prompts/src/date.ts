@@ -14,12 +14,24 @@ export interface DateOptions extends CommonOptions {
 	minDate?: Date;
 	maxDate?: Date;
 	validate?: (value: Date | undefined) => string | Error | undefined;
+	id?: string;
 }
 
 export const date = (opts: DateOptions) => {
 	const validate = opts.validate;
 	return new DatePrompt({
 		...opts,
+		id: opts.id,
+		agent: {
+			message: opts.message,
+			format: opts.format,
+			locale: opts.locale,
+			defaultValue: opts.defaultValue?.toISOString(),
+			initialValue: opts.initialValue?.toISOString(),
+			minDate: opts.minDate?.toISOString(),
+			maxDate: opts.maxDate?.toISOString(),
+			valueFormat: 'ISO 8601 date string (YYYY-MM-DD) or full ISO timestamp',
+		},
 		validate(value: Date | undefined) {
 			if (value === undefined) {
 				if (opts.defaultValue !== undefined) return undefined;

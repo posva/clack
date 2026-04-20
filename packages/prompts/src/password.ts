@@ -7,6 +7,7 @@ export interface PasswordOptions extends CommonOptions {
 	mask?: string;
 	validate?: (value: string | undefined) => string | Error | undefined;
 	clearOnError?: boolean;
+	id?: string;
 }
 export const password = (opts: PasswordOptions) => {
 	return new PasswordPrompt({
@@ -15,6 +16,11 @@ export const password = (opts: PasswordOptions) => {
 		signal: opts.signal,
 		input: opts.input,
 		output: opts.output,
+		id: opts.id,
+		agent: {
+			message: opts.message,
+			required: opts.validate !== undefined,
+		},
 		render() {
 			const hasGuide = opts.withGuide ?? settings.withGuide;
 			const title = `${hasGuide ? `${styleText('gray', S_BAR)}\n` : ''}${symbol(this.state)}  ${opts.message}\n`;

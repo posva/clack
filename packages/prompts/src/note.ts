@@ -1,11 +1,12 @@
 import process from 'node:process';
 import type { Writable } from 'node:stream';
 import { styleText } from 'node:util';
-import { getColumns, settings } from '@clack/core';
+import { emitLog, getColumns, settings } from '@clack/core';
 import stringWidth from 'fast-string-width';
 import { type Options as WrapAnsiOptions, wrapAnsi } from 'fast-wrap-ansi';
 import {
 	type CommonOptions,
+	isAgent,
 	S_BAR,
 	S_BAR_H,
 	S_CONNECT_LEFT,
@@ -36,6 +37,10 @@ const wrapWithFormat = (message: string, width: number, format: FormatFn): strin
 
 export const note = (message = '', title = '', opts?: NoteOptions) => {
 	const output: Writable = opts?.output ?? process.stdout;
+	if (isAgent()) {
+		emitLog('message', title ? `${title}\n${message}` : message, { output });
+		return;
+	}
 	const hasGuide = opts?.withGuide ?? settings.withGuide;
 	const format = opts?.format ?? defaultNoteFormatter;
 	const wrapMsg = wrapWithFormat(message, getColumns(output) - 6, format);

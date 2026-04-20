@@ -15,6 +15,7 @@ export interface ConfirmOptions extends CommonOptions {
 	inactive?: string;
 	initialValue?: boolean;
 	vertical?: boolean;
+	id?: string;
 }
 export const confirm = (opts: ConfirmOptions) => {
 	const active = opts.active ?? 'Yes';
@@ -26,6 +27,13 @@ export const confirm = (opts: ConfirmOptions) => {
 		input: opts.input,
 		output: opts.output,
 		initialValue: opts.initialValue ?? true,
+		id: opts.id,
+		agent: {
+			message: opts.message,
+			active,
+			inactive,
+			initialValue: opts.initialValue ?? true,
+		},
 		render() {
 			const hasGuide = opts.withGuide ?? settings.withGuide;
 			const titlePrefix = `${symbol(this.state)}  `;

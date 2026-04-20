@@ -1,3 +1,4 @@
+import type { AgentQuestionKind } from '../agent.js';
 import { findCursor } from '../utils/cursor.js';
 import Prompt, { type PromptOptions } from './prompt.js';
 
@@ -84,5 +85,9 @@ export default class MultiSelectPrompt<T extends OptionLike> extends Prompt<T['v
 					break;
 			}
 		});
+	}
+
+	protected override _agentKind(): AgentQuestionKind {
+		return 'multiselect';
 	}
 }

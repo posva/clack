@@ -1,3 +1,4 @@
+import type { AgentQuestionKind } from '../agent.js';
 import { findCursor } from '../utils/cursor.js';
 import Prompt, { type PromptOptions } from './prompt.js';
 
@@ -43,5 +44,9 @@ export default class SelectPrompt<T extends { value: any; disabled?: boolean }> 
 			}
 			this.changeValue();
 		});
+	}
+
+	protected override _agentKind(): AgentQuestionKind {
+		return 'select';
 	}
 }

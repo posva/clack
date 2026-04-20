@@ -1,13 +1,30 @@
 import type { Readable, Writable } from 'node:stream';
 import { styleText } from 'node:util';
-import type { State } from '@clack/core';
+import { isAgentMode as isAgentModeFn, type State } from '@clack/core';
 import isUnicodeSupported from 'is-unicode-supported';
 
 export const unicode = isUnicodeSupported();
 export const isCI = (): boolean => process.env.CI === 'true';
+export const isAgent = (): boolean => isAgentModeFn();
 export const isTTY = (output: Writable): boolean => {
 	return (output as Writable & { isTTY?: boolean }).isTTY === true;
 };
+
+export interface SerializableOption {
+	value: unknown;
+	label?: string;
+	hint?: string;
+	disabled?: boolean;
+}
+
+export function serializeOptions<T extends SerializableOption>(options: T[]): SerializableOption[] {
+	return options.map((o) => ({
+		value: o.value,
+		label: o.label,
+		hint: o.hint,
+		disabled: o.disabled,
+	}));
+}
 export const unicodeOr = (c: string, fallback: string) => (unicode ? c : fallback);
 export const S_STEP_ACTIVE = unicodeOr('◆', '*');
 export const S_STEP_CANCEL = unicodeOr('■', 'x');

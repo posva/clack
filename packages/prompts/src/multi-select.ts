@@ -7,6 +7,7 @@ import {
 	S_CHECKBOX_ACTIVE,
 	S_CHECKBOX_INACTIVE,
 	S_CHECKBOX_SELECTED,
+	serializeOptions,
 	symbol,
 	symbolBar,
 } from './common.js';
@@ -20,6 +21,7 @@ export interface MultiSelectOptions<Value> extends CommonOptions {
 	maxItems?: number;
 	required?: boolean;
 	cursorAt?: Value;
+	id?: string;
 }
 const computeLabel = (label: string, format: (text: string) => string) => {
 	return label
@@ -79,6 +81,13 @@ export const multiselect = <Value>(opts: MultiSelectOptions<Value>) => {
 		initialValues: opts.initialValues,
 		required,
 		cursorAt: opts.cursorAt,
+		id: opts.id,
+		agent: {
+			message: opts.message,
+			options: serializeOptions(opts.options),
+			initialValues: opts.initialValues,
+			required,
+		},
 		validate(selected: Value[] | undefined) {
 			if (required && (selected === undefined || selected.length === 0))
 				return `Please select at least one option.\n${styleText(

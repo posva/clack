@@ -1,4 +1,5 @@
 import { styleText } from 'node:util';
+import type { AgentQuestionKind } from '../agent.js';
 import Prompt, { type PromptOptions } from './prompt.js';
 
 export interface TextOptions extends PromptOptions<string, TextPrompt> {
@@ -39,5 +40,9 @@ export default class TextPrompt extends Prompt<string> {
 				this.value = '';
 			}
 		});
+	}
+
+	protected override _agentKind(): AgentQuestionKind {
+		return 'text';
 	}
 }

@@ -1,5 +1,6 @@
 import type { Key } from 'node:readline';
 import { styleText } from 'node:util';
+import type { AgentQuestionKind } from '../agent.js';
 import { findCursor } from '../utils/cursor.js';
 import Prompt, { type PromptOptions } from './prompt.js';
 
@@ -135,6 +136,10 @@ export default class AutocompletePrompt<T extends OptionLike> extends Prompt<
 
 		this.on('key', (char, key) => this.#onKey(char, key));
 		this.on('userInput', (value) => this.#onUserInputChanged(value));
+	}
+
+	protected override _agentKind(): AgentQuestionKind {
+		return 'autocomplete';
 	}
 
 	protected override _isActionKey(char: string | undefined, key: Key): boolean {

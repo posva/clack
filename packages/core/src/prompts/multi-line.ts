@@ -1,5 +1,6 @@
 import type { Key } from 'node:readline';
 import { styleText } from 'node:util';
+import type { AgentQuestionKind } from '../agent.js';
 import { findTextCursor } from '../utils/cursor.js';
 import { type Action, settings } from '../utils/index.js';
 import Prompt, { type PromptOptions } from './prompt.js';
@@ -134,5 +135,9 @@ export default class MultiLinePrompt extends Prompt<string> {
 				this.value = '';
 			}
 		});
+	}
+
+	protected override _agentKind(): AgentQuestionKind {
+		return 'multi-line';
 	}
 }

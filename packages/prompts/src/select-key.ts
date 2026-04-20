@@ -1,6 +1,6 @@
 import { styleText } from 'node:util';
 import { SelectKeyPrompt, settings, wrapTextWithPrefix } from '@clack/core';
-import { type CommonOptions, S_BAR, S_BAR_END, symbol } from './common.js';
+import { type CommonOptions, S_BAR, S_BAR_END, serializeOptions, symbol } from './common.js';
 import type { Option } from './select.js';
 
 export interface SelectKeyOptions<Value extends string> extends CommonOptions {
@@ -8,6 +8,7 @@ export interface SelectKeyOptions<Value extends string> extends CommonOptions {
 	options: Option<Value>[];
 	initialValue?: Value;
 	caseSensitive?: boolean;
+	id?: string;
 }
 
 export const selectKey = <Value extends string>(opts: SelectKeyOptions<Value>) => {
@@ -39,6 +40,13 @@ export const selectKey = <Value extends string>(opts: SelectKeyOptions<Value>) =
 		output: opts.output,
 		initialValue: opts.initialValue,
 		caseSensitive: opts.caseSensitive,
+		id: opts.id,
+		agent: {
+			message: opts.message,
+			options: serializeOptions(opts.options),
+			initialValue: opts.initialValue,
+			caseSensitive: opts.caseSensitive,
+		},
 		render() {
 			const hasGuide = opts.withGuide ?? settings.withGuide;
 			const title = `${hasGuide ? `${styleText('gray', S_BAR)}\n` : ''}${symbol(this.state)}  ${opts.message}\n`;
