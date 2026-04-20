@@ -1,6 +1,6 @@
 import { EventEmitter } from 'node:stream';
 import { styleText } from 'node:util';
-import { getColumns, updateSettings } from '@clack/core';
+import { getColumns, updateSettings } from '@posva/clack-core';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 import * as prompts from '../src/index.js';
 import { MockWritable } from './test-utils.js';

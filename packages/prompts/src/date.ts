@@ -1,6 +1,6 @@
 import { styleText } from 'node:util';
-import type { DateFormat, State } from '@clack/core';
-import { DatePrompt, settings } from '@clack/core';
+import type { DateFormat, State } from '@posva/clack-core';
+import { DatePrompt, settings } from '@posva/clack-core';
 import { type CommonOptions, S_BAR, S_BAR_END, symbol } from './common.js';
 
 export type { DateFormat };

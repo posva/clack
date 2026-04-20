@@ -1,10 +1,10 @@
 {
-  "name": "@clack/root",
+  "name": "@posva/clack-root",
   "private": true,
   "type": "module",
   "scripts": {
     "stub": "pnpm -r run build --stub",
-    "build": "pnpm --filter \"@clack/*\" run build",
+    "build": "pnpm --filter \"@posva/clack-*\" run build",
     "start": "pnpm run dev",
     "dev": "pnpm --filter @example/changesets run start",
     "format": "biome check --write",

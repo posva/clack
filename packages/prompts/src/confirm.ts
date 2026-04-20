@@ -1,5 +1,5 @@
 import { styleText } from 'node:util';
-import { ConfirmPrompt, settings, wrapTextWithPrefix } from '@clack/core';
+import { ConfirmPrompt, settings, wrapTextWithPrefix } from '@posva/clack-core';
 import {
 	type CommonOptions,
 	S_BAR,

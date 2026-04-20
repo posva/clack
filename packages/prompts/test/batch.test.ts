@@ -8,8 +8,10 @@ import {
 	setAgentMode,
 	setExit,
 	writeSession,
-} from '@clack/core';
+} from '@posva/clack-core';
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
+import { batch } from '../src/batch.js';
+import { MockReadable, MockWritable } from './test-utils.js';
 
 function extractJsonLines(doc: string): Array<Record<string, unknown>> {
 	return doc
@@ -18,8 +20,6 @@ function extractJsonLines(doc: string): Array<Record<string, unknown>> {
 		.filter((ln) => ln.startsWith('{'))
 		.map((ln) => JSON.parse(ln));
 }
-import { batch } from '../src/batch.js';
-import { MockReadable, MockWritable } from './test-utils.js';
 
 describe('batch() agent mode', () => {
 	let tmp: string;

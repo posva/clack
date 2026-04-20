@@ -1,7 +1,7 @@
 import process from 'node:process';
 import type { Writable } from 'node:stream';
 import { styleText } from 'node:util';
-import { emitLog, getColumns, settings } from '@clack/core';
+import { emitLog, getColumns, settings } from '@posva/clack-core';
 import stringWidth from 'fast-string-width';
 import { type Options as WrapAnsiOptions, wrapAnsi } from 'fast-wrap-ansi';
 import {

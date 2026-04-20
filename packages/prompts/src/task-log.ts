@@ -1,6 +1,6 @@
 import type { Writable } from 'node:stream';
 import { styleText } from 'node:util';
-import { getColumns } from '@clack/core';
+import { getColumns } from '@posva/clack-core';
 import { erase } from 'sisteransi';
 import {
 	type CommonOptions,

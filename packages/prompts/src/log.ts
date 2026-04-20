@@ -1,5 +1,5 @@
 import { styleText } from 'node:util';
-import { emitLog, settings } from '@clack/core';
+import { emitLog, settings } from '@posva/clack-core';
 import {
 	type CommonOptions,
 	isAgent,

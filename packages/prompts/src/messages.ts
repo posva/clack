@@ -1,6 +1,6 @@
 import type { Writable } from 'node:stream';
 import { styleText } from 'node:util';
-import { emitLog, settings } from '@clack/core';
+import { emitLog, settings } from '@posva/clack-core';
 import { type CommonOptions, isAgent, S_BAR, S_BAR_END, S_BAR_START } from './common.js';
 
 export const cancel = (message = '', opts?: CommonOptions) => {

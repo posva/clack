@@ -1,5 +1,5 @@
 import { setTimeout } from 'node:timers/promises';
-import { isCancel, note, text } from '@clack/prompts';
+import { isCancel, note, text } from '@posva/clack-prompts';
 
 async function main() {
 	console.clear();

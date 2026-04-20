@@ -32,7 +32,7 @@ importers:
 
   examples/basic:
     dependencies:
-      '@clack/prompts':
+      '@posva/clack-prompts':
         specifier: workspace:*
         version: link:../../packages/prompts
       jiti:
@@ -48,7 +48,7 @@ importers:
 
   examples/changesets:
     dependencies:
-      '@clack/prompts':
+      '@posva/clack-prompts':
         specifier: workspace:*
         version: link:../../packages/prompts
       jiti:
@@ -76,7 +76,7 @@ importers:
 
   packages/prompts:
     dependencies:
-      '@clack/core':
+      '@posva/clack-core':
         specifier: workspace:*
         version: link:../core
       fast-string-width:

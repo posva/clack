@@ -1,5 +1,5 @@
 import { styleText } from 'node:util';
-import { SelectPrompt, settings, wrapTextWithPrefix } from '@clack/core';
+import { SelectPrompt, settings, wrapTextWithPrefix } from '@posva/clack-core';
 import {
 	type CommonOptions,
 	S_BAR,

@@ -1,4 +1,4 @@
-import * as p from '@clack/prompts';
+import * as p from '@posva/clack-prompts';
 
 p.intro('spinner start...');
 

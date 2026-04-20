@@ -1,6 +1,6 @@
 import type { Readable, Writable } from 'node:stream';
 import { styleText } from 'node:util';
-import { isAgentMode as isAgentModeFn, type State } from '@clack/core';
+import { isAgentMode as isAgentModeFn, type State } from '@posva/clack-core';
 import isUnicodeSupported from 'is-unicode-supported';
 
 export const unicode = isUnicodeSupported();

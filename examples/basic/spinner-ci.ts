@@ -9,7 +9,7 @@
  *
  * Issue: https://github.com/bombshell-dev/clack/issues/168
  */
-import * as p from '@clack/prompts';
+import * as p from '@posva/clack-prompts';
 
 const s = p.spinner();
 let progress = 0;

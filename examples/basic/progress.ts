@@ -1,6 +1,6 @@
 import { setTimeout } from 'node:timers/promises';
-import type { ProgressResult } from '@clack/prompts';
-import * as p from '@clack/prompts';
+import type { ProgressResult } from '@posva/clack-prompts';
+import * as p from '@posva/clack-prompts';
 
 async function fakeProgress(progressbar: ProgressResult): Promise<void> {
 	await setTimeout(1000);

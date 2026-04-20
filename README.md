@@ -4,55 +4,138 @@
 <div align="center">
     <img alt="Clack logo" src="/.github/assets/clack.png?sanitize=true" width="320">
 </div>
-<h2 align="center">stylish interactive prompts for JavaScript CLIs</h3>
+<h2 align="center">stylish interactive prompts for JavaScript CLIs — now agent-aware</h3>
 
-<h4 align="center"><a href="packages/prompts#readme"><code>@clack/prompts</code></a>: opinionated, ready-to-use prompt components</h4>
+<h4 align="center"><a href="packages/prompts#readme"><code>@posva/clack-prompts</code></a>: opinionated, ready-to-use prompt components</h4>
 
-<h4 align="center"><a href="packages/core#readme"><code>@clack/core</code></a>: headless, unstyled prompt primitives</h4>
-
-<br />
-<br />
-
-<h3 align="center"><a href="https://bomb.sh/docs/clack/basics/getting-started/">Read the docs</a></h3>
+<h4 align="center"><a href="packages/core#readme"><code>@posva/clack-core</code></a>: headless, unstyled prompt primitives</h4>
 
 <br />
+
+> **This is a fork of [bombshell-dev/clack](https://github.com/bombshell-dev/clack).**
+> It adds **agent mode**: a resumable protocol for when a clack-powered CLI is
+> driven by an AI agent (Claude Code, Cursor, Aider, Codex, …) instead of a human.
+> Upstream clack blocks on `readline` waiting for a keypress; under an agent
+> that keypress never comes and the CLI hangs. This fork fixes that without
+> changing the interactive UX for humans.
+
+Humans still get the same stylish TUI. Agents get a plain-English + JSON
+protocol on stdout and a local session file they write answers into.
 
 ---
 
-## This is a fork of [bombshell-dev/clack](https://github.com/bombshell-dev/clack)
+## Install
 
-It adds **agent mode** — a resumable protocol for when a clack-powered CLI is
-driven by an AI agent (Claude Code, Cursor, Aider, Codex, …) instead of a human.
-Upstream clack blocks on `readline` waiting for a keypress; under an agent that
-keypress never comes and the CLI hangs.
+### New project — use the fork directly
 
-### What changes in agent mode
+```bash
+pnpm add @posva/clack-prompts
+# or: npm install @posva/clack-prompts
+# or: yarn add @posva/clack-prompts
+```
 
-- Auto-detected via [`std-env`](https://github.com/unjs/std-env)'s `isAgent`.
-  No env var required inside Claude Code / Cursor / Aider / Codex etc.
-  Force with `CLACK_AGENT=1`, disable with `CLACK_AGENT=0`.
+```ts
+import * as p from '@posva/clack-prompts';
+```
+
+### Existing project — swap upstream clack in place (no code changes)
+
+If your project already `import`s `@clack/prompts`, keep the imports and alias
+the install so you don't have to edit a single line:
+
+```bash
+# pnpm
+pnpm add @clack/prompts@npm:@posva/clack-prompts
+
+# npm
+npm install @clack/prompts@npm:@posva/clack-prompts
+
+# yarn
+yarn add @clack/prompts@npm:@posva/clack-prompts
+```
+
+Your existing `import ... from '@clack/prompts'` keeps working. Run your CLI
+from a terminal and it's interactive as before. Run it under an agent and
+it enters agent mode automatically.
+
+> The same alias trick works for `@clack/core` if you depend on it directly:
+> `pnpm add @clack/core@npm:@posva/clack-core`.
+
+---
+
+## Agent mode at a glance
+
+- **Auto-detected** via [`std-env`](https://github.com/unjs/std-env)'s `isAgent`.
+  No env var needed inside Claude Code / Cursor / Aider / Codex, etc.
+  Force with `CLACK_AGENT=1`; disable with `CLACK_AGENT=0`.
 - Each prompt prints a short plain-English block on stdout with the question as
   a single-line JSON payload, records the pending question to
   `./.clack-session.json`, and exits with code `2`.
 - The agent writes an answer into the session file and re-runs the CLI. Known
   answers resolve instantly; the next unknown prompt is emitted the same way.
+  Validation failures exit `3` with a re-emitted question.
 - Independent questions can be emitted as a single batch via `batch()` so the
   agent answers them in one round-trip. `group()` keeps its sequential /
-  dependent-answer semantics.
-- On clean exit (`code 0`), the session file is deleted so the next invocation
+  dependent-answer semantics and replays answers from the session file.
+- On clean exit (`code 0`) the session file is deleted so the next invocation
   starts fresh. Preserve it for debugging with `CLACK_AGENT_KEEP_FILE=1`.
 - All human output (colors, boxes, spinners, cursor moves) is suppressed in
   agent mode. Non-prompt events use tag markers: `[info]`, `[success]`,
-  `[task:start]`, …
+  `[task:start]`, `[task:stop]`, …
 
-### Try it
+---
+
+## Try it — any existing clack CLI gains agent mode for free
+
+[`examples/basic/index.ts`](examples/basic/index.ts) is the canonical `create-app`
+demo from upstream clack: `intro` → `group()` of `text`/`password`/`select`/
+`multiselect`/`confirm` → `spinner` → `note` → `outro`. It didn't need a single
+line changed for agent mode to work.
+
+**Interactive (terminal):**
 
 ```bash
 pnpm install
 pnpm build
-AI_AGENT=claude node examples/basic/agent-mode.ts
+node examples/basic/index.ts       # same stylish TUI as upstream
 ```
 
-See [`examples/basic/agent-mode.ts`](examples/basic/agent-mode.ts) and the
-agent-mode changeset in [`.changeset/agent-mode.md`](.changeset/agent-mode.md)
-for the full protocol.
+**Agent mode (simulate a harness):**
+
+```bash
+AI_AGENT=claude node examples/basic/index.ts
+```
+
+You'll see something like:
+
+```
+[info]  create-app
+
+Clack needs 1 answer. Write it into /path/to/.clack-session.json and re-run this command.
+
+Question:
+{"id":"auto:0","kind":"text","message":"Where should we create your project?","placeholder":"./sparkling-solid","required":true}
+
+Add to "answers.auto:0" in the session file one of:
+  {"value": <your answer>}   or   {"cancelled": true}
+```
+
+The agent edits `.clack-session.json`, re-runs the command, and the next
+unknown prompt is emitted. When every prompt is answered, exit code `0` and
+the session file is cleaned up.
+
+**Tips for authors**
+- Give prompts a stable `id` (e.g. `p.text({ id: 'path', message: ... })`)
+  instead of relying on the positional `auto:<n>` fallback — it's more robust
+  across branching flows.
+- Use `batch()` when several prompts don't depend on each other, so the agent
+  can answer them in one round-trip instead of re-invoking per prompt. See
+  [`examples/basic/agent-mode.ts`](examples/basic/agent-mode.ts).
+
+---
+
+## Docs
+
+Upstream prompts & options: <https://bomb.sh/docs/clack/basics/getting-started/>
+(every API surface is preserved; see [the agent-mode changeset](.changeset/agent-mode.md)
+for the additions.)

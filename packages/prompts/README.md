@@ -1,4 +1,4 @@
-# `@clack/prompts`
+# `@posva/clack-prompts`
 
 Effortlessly build beautiful command-line apps 🪄 [Try the demo](https://stackblitz.com/edit/clack-prompts?file=index.js)
 
@@ -6,7 +6,7 @@ Effortlessly build beautiful command-line apps 🪄 [Try the demo](https://stack
 
 ---
 
-`@clack/prompts` is an opinionated, pre-styled wrapper around [`@clack/core`](https://www.npmjs.com/package/@clack/core).
+`@posva/clack-prompts` is an opinionated, pre-styled wrapper around [`@posva/clack-core`](https://www.npmjs.com/package/@posva/clack-core).
 
 - 🤏 80% smaller than other options
 - 💎 Beautiful, minimal UI
@@ -20,7 +20,7 @@ Effortlessly build beautiful command-line apps 🪄 [Try the demo](https://stack
 The `intro` and `outro` functions will print a message to begin or end a prompt session, respectively.
 
 ```js
-import { intro, outro } from '@clack/prompts';
+import { intro, outro } from '@posva/clack-prompts';
 
 intro(`create-my-app`);
 // Do stuff
@@ -32,7 +32,7 @@ outro(`You're all set!`);
 The `isCancel` function is a guard that detects when a user cancels a question with `CTRL + C`. You should handle this situation for each prompt, optionally providing a nice cancellation message with the `cancel` utility.
 
 ```js
-import { isCancel, cancel, text } from '@clack/prompts';
+import { isCancel, cancel, text } from '@posva/clack-prompts';
 
 const value = await text({
   message: 'What is the meaning of life?',
@@ -51,7 +51,7 @@ if (isCancel(value)) {
 The text component accepts a single line of text.
 
 ```js
-import { text } from '@clack/prompts';
+import { text } from '@posva/clack-prompts';
 
 const meaning = await text({
   message: 'What is the meaning of life?',
@@ -68,7 +68,7 @@ const meaning = await text({
 The password component behaves like `text`, but masks the input as the user types.
 
 ```js
-import { password } from '@clack/prompts';
+import { password } from '@posva/clack-prompts';
 
 const secret = await password({
   message: 'Set a password.',
@@ -84,7 +84,7 @@ const secret = await password({
 The confirm component accepts a yes or no answer. The result is a boolean value of `true` or `false`.
 
 ```js
-import { confirm } from '@clack/prompts';
+import { confirm } from '@posva/clack-prompts';
 
 const shouldContinue = await confirm({
   message: 'Do you want to continue?',
@@ -96,7 +96,7 @@ const shouldContinue = await confirm({
 The date component accepts a calendar date and returns a `Date` value.
 
 ```js
-import { date } from '@clack/prompts';
+import { date } from '@posva/clack-prompts';
 
 const dueDate = await date({
   message: 'Pick a due date.',
@@ -111,7 +111,7 @@ const dueDate = await date({
 The select component allows a user to choose one value from a list of options. The result is the `value` prop of a given option.
 
 ```js
-import { select } from '@clack/prompts';
+import { select } from '@posva/clack-prompts';
 
 const projectType = await select({
   message: 'Pick a project type.',
@@ -128,7 +128,7 @@ const projectType = await select({
 The autocomplete component lets a user filter a list by typing, then choose one option from the matching results. By default, matching uses each option's `label`, `hint`, and `value`. The result is the selected option's `value`.
 
 ```js
-import { autocomplete } from '@clack/prompts';
+import { autocomplete } from '@posva/clack-prompts';
 
 const framework = await autocomplete({
   message: 'Pick a framework.',
@@ -147,7 +147,7 @@ const framework = await autocomplete({
 The `selectKey` component lets a user choose an option by pressing its single-character string `value` key directly.
 
 ```js
-import { selectKey } from '@clack/prompts';
+import { selectKey } from '@posva/clack-prompts';
 
 const action = await selectKey({
   message: 'Pick an action.',
@@ -164,7 +164,7 @@ const action = await selectKey({
 The `multiselect` component allows a user to choose many values from a list of options. The result is an array with all selected `value` props.
 
 ```js
-import { multiselect } from '@clack/prompts';
+import { multiselect } from '@posva/clack-prompts';
 
 const additionalTools = await multiselect({
   message: 'Select additional tools.',
@@ -180,7 +180,7 @@ const additionalTools = await multiselect({
 It is also possible to select multiple items arranged into hierarchy by using `groupMultiselect`:
 
 ```js
-import { groupMultiselect } from '@clack/prompts';
+import { groupMultiselect } from '@posva/clack-prompts';
 
 const basket = await groupMultiselect({
   message: 'Select your favorite fruits and vegetables:',
@@ -204,7 +204,7 @@ const basket = await groupMultiselect({
 The multi-line text component accepts multiple lines of text input. By default, pressing `Enter` twice submits the input.
 
 ```js
-import { multiline } from '@clack/prompts';
+import { multiline } from '@posva/clack-prompts';
 
 const bio = await multiline({
   message: 'Tell us about yourself.',
@@ -229,7 +229,7 @@ const bio = await multiline({
 The path component offers filesystem path suggestions and returns the selected path as a string. When `directory: true` is set, only directories can be selected.
 
 ```js
-import { path } from '@clack/prompts';
+import { path } from '@posva/clack-prompts';
 
 const targetDir = await path({
   message: 'Select an existing directory.',
@@ -242,7 +242,7 @@ const targetDir = await path({
 The spinner component surfaces a pending action, such as a long-running download or dependency installation.
 
 ```js
-import { spinner } from '@clack/prompts';
+import { spinner } from '@posva/clack-prompts';
 
 const s = spinner();
 s.start('Installing via npm');
@@ -255,7 +255,7 @@ s.stop('Installed via npm');
 The progress component extends the spinner component to add a progress bar to visualize the progression of an action.
 
 ```js
-import { progress } from '@clack/prompts';
+import { progress } from '@posva/clack-prompts';
 
 const p = progress({ max: 10 });
 p.start('Downloading archive');
@@ -274,7 +274,7 @@ p.stop('Archive downloaded');
 Grouping prompts together is a great way to keep your code organized. This accepts a JSON object with a name that can be used to reference the group later. The second argument is an optional but has a `onCancel` callback that will be called if the user cancels one of the prompts in the group.
 
 ```js
-import * as p from '@clack/prompts';
+import * as p from '@posva/clack-prompts';
 
 const group = await p.group(
   {
@@ -308,7 +308,7 @@ console.log(group.name, group.age, group.color);
 Execute multiple tasks in spinners.
 
 ```js
-import { tasks } from '@clack/prompts';
+import { tasks } from '@posva/clack-prompts';
 
 await tasks([
   {
@@ -324,7 +324,7 @@ await tasks([
 ### Logs
 
 ```js
-import { log } from '@clack/prompts';
+import { log } from '@posva/clack-prompts';
 
 log.info('Info!');
 log.success('Success!');
@@ -340,7 +340,7 @@ log.message('Hello, World', { symbol: color.cyan('~') });
 When interacting with dynamic LLMs or other streaming message providers, use the `stream` APIs to log messages from an iterable, even an async one.
 
 ```js
-import { stream } from '@clack/prompts';
+import { stream } from '@posva/clack-prompts';
 
 stream.info((function *() { yield 'Info!'; })());
 stream.success((function *() { yield 'Success!'; })());
@@ -357,7 +357,7 @@ stream.message((function *() { yield 'Hello'; yield ", World" })(), { symbol: co
 When executing a sub-process or a similar sub-task, `taskLog` can be used to render the output continuously and clear it at the end if it was successful.
 
 ```js
-import { taskLog } from '@clack/prompts';
+import { taskLog } from '@posva/clack-prompts';
 
 const log = taskLog({
 	title: 'Running npm install'

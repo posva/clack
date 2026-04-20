@@ -110,7 +110,7 @@ export default class Prompt<TValue> {
 
 	/**
 	 * The serialized question emitted in agent mode. The payload is driven by the
-	 * `opts.agent` overrides supplied by the high-level `@clack/prompts` wrapper
+	 * `opts.agent` overrides supplied by the high-level `@posva/clack-prompts` wrapper
 	 * (which knows the `message` and user-visible options). Core only contributes
 	 * the `id` and `kind`.
 	 */

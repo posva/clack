@@ -1,4 +1,4 @@
-import * as p from '@clack/prompts';
+import * as p from '@posva/clack-prompts';
 import color from 'picocolors';
 
 /**

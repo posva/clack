@@ -64,10 +64,10 @@ If you want to test changes to Clack packages in your own project, you can use p
    # In your project
    cd /path/to/your-project
    
-   # Link @clack/core
+   # Link @posva/clack-core
    pnpm link --global /path/to/clack/packages/core
    
-   # Link @clack/prompts
+   # Link @posva/clack-prompts
    pnpm link --global /path/to/clack/packages/prompts
    ```
 
@@ -77,8 +77,8 @@ If you want to test changes to Clack packages in your own project, you can use p
    ```json
    {
      "dependencies": {
-       "@clack/core": "file:/path/to/clack/packages/core",
-       "@clack/prompts": "file:/path/to/clack/packages/prompts"
+       "@posva/clack-core": "file:/path/to/clack/packages/core",
+       "@posva/clack-prompts": "file:/path/to/clack/packages/prompts"
      }
    }
    ```
@@ -115,8 +115,8 @@ clack/
 ├── .github/            # GitHub workflows and templates
 ├── examples/           # Example implementations of Clack
 ├── packages/           # Core packages
-│   ├── core/           # Unstyled primitives (@clack/core)
-│   └── prompts/        # Ready-to-use components (@clack/prompts)
+│   ├── core/           # Unstyled primitives (@posva/clack-core)
+│   └── prompts/        # Ready-to-use components (@posva/clack-prompts)
 ├── biome.json          # Biome configuration
 ├── package.json        # Root package.json
 ├── pnpm-workspace.yaml # Workspace configuration
@@ -125,12 +125,12 @@ clack/
 
 ### Key Packages
 
-1. **@clack/core** (`packages/core/`): 
+1. **@posva/clack-core** (`packages/core/`): 
    - Contains the unstyled, extensible primitives for building CLI applications
    - The foundation layer that provides the core functionality
 
-2. **@clack/prompts** (`packages/prompts/`): 
-   - Built on top of @clack/core
+2. **@posva/clack-prompts** (`packages/prompts/`): 
+   - Built on top of @posva/clack-core
    - Provides beautiful, ready-to-use CLI prompt components
    - What most users will interact with directly
 

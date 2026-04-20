@@ -1,5 +1,5 @@
 import { styleText } from 'node:util';
-import { GroupMultiSelectPrompt, settings } from '@clack/core';
+import { GroupMultiSelectPrompt, settings } from '@posva/clack-core';
 import {
 	type CommonOptions,
 	S_BAR,

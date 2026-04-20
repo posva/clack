@@ -1,5 +1,5 @@
 import { styleText } from 'node:util';
-import { MultiLinePrompt, settings, wrapTextWithPrefix } from '@clack/core';
+import { MultiLinePrompt, settings, wrapTextWithPrefix } from '@posva/clack-core';
 import { S_BAR, S_BAR_END, symbol } from './common.js';
 import type { TextOptions } from './text.js';
 

@@ -10,7 +10,7 @@ assignees: ''
 
 - OS: [e.g. macOS, Windows]
 - Node Version: [e.g. v18.14.0]
-- Package: [e.g. `@clack/prompts`, `@clack/core`]
+- Package: [e.g. `@posva/clack-prompts`, `@posva/clack-core`]
 - Package Version: [e.g. v0.2.0]
 
 **Describe the bug**

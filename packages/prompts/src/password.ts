@@ -1,5 +1,5 @@
 import { styleText } from 'node:util';
-import { PasswordPrompt, settings } from '@clack/core';
+import { PasswordPrompt, settings } from '@posva/clack-core';
 import { type CommonOptions, S_BAR, S_BAR_END, S_PASSWORD_MASK, symbol } from './common.js';
 
 export interface PasswordOptions extends CommonOptions {

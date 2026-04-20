@@ -1,5 +1,5 @@
 import { setTimeout as sleep } from 'node:timers/promises';
-import * as p from '@clack/prompts';
+import * as p from '@posva/clack-prompts';
 
 async function main() {
 	p.intro('Advanced Spinner Cancellation Demo');

@@ -1,5 +1,5 @@
 import { styleText } from 'node:util';
-import { getColumns, getRows } from '@clack/core';
+import { getColumns, getRows } from '@posva/clack-core';
 import { wrapAnsi } from 'fast-wrap-ansi';
 import type { CommonOptions } from './common.js';
 

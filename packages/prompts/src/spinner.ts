@@ -1,5 +1,5 @@
 import { styleText } from 'node:util';
-import { block, emitTask, getColumns, settings } from '@clack/core';
+import { block, emitTask, getColumns, settings } from '@posva/clack-core';
 import { wrapAnsi } from 'fast-wrap-ansi';
 import { cursor, erase } from 'sisteransi';
 import {

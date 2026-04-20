@@ -1,5 +1,5 @@
 import { styleText } from 'node:util';
-import { SelectKeyPrompt, settings, wrapTextWithPrefix } from '@clack/core';
+import { SelectKeyPrompt, settings, wrapTextWithPrefix } from '@posva/clack-core';
 import { type CommonOptions, S_BAR, S_BAR_END, serializeOptions, symbol } from './common.js';
 import type { Option } from './select.js';
 

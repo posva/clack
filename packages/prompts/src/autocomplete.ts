@@ -1,5 +1,5 @@
 import { styleText } from 'node:util';
-import { AutocompletePrompt, settings } from '@clack/core';
+import { AutocompletePrompt, settings } from '@posva/clack-core';
 import {
 	type CommonOptions,
 	S_BAR,

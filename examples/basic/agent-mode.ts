@@ -5,22 +5,22 @@
  * Agent mode:   auto-detected under Claude Code / Cursor / Aider / Codex etc.
  *               Force with `CLACK_AGENT=1`.
  *
- * Under an agent, each prompt serializes as a TOON document on stdout and
- * exits with code 2. The agent writes answers to `./.clack-session.json`
- * (override via `CLACK_AGENT_FILE`) and re-runs until exit 0. On a clean exit
- * (code 0) the session file is deleted — set `CLACK_AGENT_KEEP_FILE=1` to
- * preserve it for debugging.
+ * Under an agent, each prompt prints a short plain-English block on stdout
+ * with the question as a single-line JSON payload and exits with code 2.
+ * The agent writes answers to `./.clack-session.json` (override via
+ * `CLACK_AGENT_FILE`) and re-runs until exit 0. On a clean exit the session
+ * file is deleted — set `CLACK_AGENT_KEEP_FILE=1` to preserve it for
+ * debugging.
  *
  * This example demonstrates:
  *
- *   1. `batch()` — emits several independent questions in one
- *      `clack: questions` payload so the agent answers them in one round-trip.
+ *   1. `batch()` — emits several independent questions in one block so the
+ *      agent answers them in one round-trip.
  *
  *   2. A plain dependent prompt (`select`) — stays sequential because its
  *      message references a prior answer.
  */
-import * as p from '@clack/prompts';
-import { resolve } from 'node:path';
+import * as p from '@posva/clack-prompts';
 
 async function main() {
 	p.intro('create-app (agent-mode demo)');

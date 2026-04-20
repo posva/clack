@@ -7,7 +7,7 @@ import {
 	markAnswerConsumed,
 	readSession,
 	writeSession,
-} from '@clack/core';
+} from '@posva/clack-core';
 import { autocomplete, type AutocompleteOptions } from './autocomplete.js';
 import { isAgent, serializeOptions } from './common.js';
 import { confirm, type ConfirmOptions } from './confirm.js';

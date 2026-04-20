@@ -1,5 +1,5 @@
 import { styleText } from 'node:util';
-import type { State } from '@clack/core';
+import type { State } from '@posva/clack-core';
 import { unicodeOr } from './common.js';
 import { type SpinnerOptions, type SpinnerResult, spinner } from './spinner.js';
 

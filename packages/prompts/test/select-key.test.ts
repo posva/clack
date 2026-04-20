@@ -1,4 +1,4 @@
-import { updateSettings } from '@clack/core';
+import { updateSettings } from '@posva/clack-core';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 import * as prompts from '../src/index.js';
 import { MockReadable, MockWritable } from './test-utils.js';

@@ -1,6 +1,6 @@
 ---
-"@clack/core": minor
-"@clack/prompts": minor
+"@posva/clack-core": minor
+"@posva/clack-prompts": minor
 ---
 
 Add agent mode — a resumable protocol for when a clack-powered CLI is driven by an AI agent instead of a human.
@@ -19,8 +19,8 @@ The agent writes an answer into the session file and re-runs the CLI. On the nex
 
 New API:
 
-- `@clack/core`: `isAgentMode`, `setAgentMode`, `readSession`, `writeSession`, `getAnswer`, `getSessionFilePath`, `emitQuestion`, `emitQuestions`, `emitError`, `emitLog`, `emitTask`, `exit`, `setExit`, `resetAutoIdCounter`; `id?` + `agent?` options on every prompt.
-- `@clack/prompts`: `batch({ key: batch.text({...}) })` for independent questions that should be emitted together.
+- `@posva/clack-core`: `isAgentMode`, `setAgentMode`, `readSession`, `writeSession`, `getAnswer`, `getSessionFilePath`, `emitQuestion`, `emitQuestions`, `emitError`, `emitLog`, `emitTask`, `exit`, `setExit`, `resetAutoIdCounter`; `id?` + `agent?` options on every prompt.
+- `@posva/clack-prompts`: `batch({ key: batch.text({...}) })` for independent questions that should be emitted together.
 
 `group()` keeps its sequential / dependent-answer semantics — unchanged, but now replays answers from the session file in agent mode.
 
