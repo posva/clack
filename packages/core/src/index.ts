@@ -3,6 +3,7 @@ export type {
 	AgentQuestion,
 	AgentQuestionKind,
 	AgentSessionFile,
+	OnceOptions,
 } from './agent.js';
 export {
 	emitError,
@@ -15,6 +16,7 @@ export {
 	getSessionFilePath,
 	isAgentMode,
 	markAnswerConsumed,
+	once,
 	readSession,
 	resetAutoIdCounter,
 	resetCleanupState,

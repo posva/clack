@@ -19,6 +19,9 @@
  *
  *   2. A plain dependent prompt (`select`) — stays sequential because its
  *      message references a prior answer.
+ *
+ * See `agent-once.ts` for a `once()` demo that memoizes expensive
+ * side effects across agent replays.
  */
 import * as p from '@posva/clack-prompts';
 

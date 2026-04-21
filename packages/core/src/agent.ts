@@ -13,6 +13,7 @@ export interface AgentAnswerEntry {
 export interface AgentSessionFile {
 	version: 1;
 	answers: Record<string, AgentAnswerEntry>;
+	steps?: Record<string, unknown>;
 	pending?: AgentQuestion[];
 }
 
@@ -135,6 +136,63 @@ export function writeSession(session: AgentSessionFile, path: string = getSessio
 export function getAnswer(id: string, path?: string): AgentAnswerEntry | undefined {
 	const s = readSession(path);
 	return s.answers[id];
+}
+
+export interface OnceOptions {
+	sessionFile?: string;
+}
+
+/**
+ * Run `fn` once across all agent-mode iterations of the script. The resolved
+ * value is cached in the session file under `steps[id]`. On the next iteration
+ * the cached value is returned and `fn` is not invoked. Outside agent mode,
+ * `fn` runs on every call.
+ *
+ * The return value must be JSON-serializable — callers are responsible for
+ * that, same as with prompt answers. Errors are NOT cached: a thrown error
+ * propagates and the next call retries.
+ *
+ * @param id A unique identifier for this step
+ * @param fn The function to run once. Can be async or sync.
+ */
+export async function once<T>(
+	id: string,
+	fn: () => Promise<T>,
+	opts?: OnceOptions
+): Promise<T>
+export function once<T>(
+	id: string,
+	fn: () => T,
+	opts?: OnceOptions
+): T
+export async function once<T>(
+	id: string,
+	fn: () => T | Promise<T>,
+	opts: OnceOptions = {}
+): Promise<T> {
+	if (!isAgentMode()) return fn();
+
+	const path = opts.sessionFile ?? getSessionFilePath();
+	const session = readSession(path);
+
+	// already ran previously, return cached value
+	if (session.steps && id in session.steps) {
+		return session.steps[id] as T;
+	}
+
+	// only await if needed
+	const promiseOrValue = fn();
+	const value = promiseOrValue instanceof Promise ? await promiseOrValue : promiseOrValue;
+
+	writeSession({
+		...session,
+		steps: {
+			...session.steps,
+			[id]: value
+		},
+	}, path);
+
+	return value;
 }
 
 /**

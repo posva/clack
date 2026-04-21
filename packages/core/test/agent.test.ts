@@ -8,6 +8,7 @@ import {
 	getAnswer,
 	isAgentMode,
 	markAnswerConsumed,
+	once,
 	readSession,
 	resetAutoIdCounter,
 	resetCleanupState,
@@ -429,6 +430,118 @@ describe('agent mode', () => {
 			// Session file never created
 			markAnswerConsumed();
 			expect(runCleanup(0)).toBe(false); // unlinkSync throws -> caught -> false
+			expect(existsSync(sessionFile)).toBe(false);
+		});
+	});
+
+	describe('once()', () => {
+		test('runs the fn once in agent mode and caches the result in steps', async () => {
+			const fn = vi.fn(async () => 'changelog-body');
+			const first = await once('changelog', fn);
+			expect(first).toBe('changelog-body');
+			expect(fn).toHaveBeenCalledTimes(1);
+
+			// Second call in the same run: returns cache, no re-invocation.
+			const second = await once('changelog', fn);
+			expect(second).toBe('changelog-body');
+			expect(fn).toHaveBeenCalledTimes(1);
+
+			// Cached value is visible in the session file.
+			const session = readSession(sessionFile);
+			expect(session.steps).toEqual({ changelog: 'changelog-body' });
+		});
+
+		test('simulated re-run (fresh process) finds the cached value', async () => {
+			// First "process" writes the step.
+			await once('build', async () => ({ sha: 'abc', size: 42 }));
+
+			// Simulate a fresh invocation: fn should NOT be called again.
+			const fn = vi.fn(async () => ({ sha: 'xxx', size: 0 }));
+			const result = await once('build', fn);
+			expect(fn).not.toHaveBeenCalled();
+			expect(result).toEqual({ sha: 'abc', size: 42 });
+		});
+
+		test('non-agent mode: fn runs every call, no file written', async () => {
+			setAgentMode(false);
+			const fn = vi.fn(async () => 'v');
+			await once('k', fn);
+			await once('k', fn);
+			expect(fn).toHaveBeenCalledTimes(2);
+			expect(existsSync(sessionFile)).toBe(false);
+		});
+
+		test('thrown errors are NOT cached: next call retries', async () => {
+			let attempts = 0;
+			const fn = async () => {
+				attempts++;
+				if (attempts === 1) throw new Error('boom');
+				return 'ok';
+			};
+
+			await expect(once('flaky', fn)).rejects.toThrow('boom');
+			// Session should not contain the failed step.
+			expect(readSession(sessionFile).steps?.flaky).toBeUndefined();
+
+			const result = await once('flaky', fn);
+			expect(result).toBe('ok');
+			expect(attempts).toBe(2);
+			expect(readSession(sessionFile).steps?.flaky).toBe('ok');
+		});
+
+		test('distinct IDs do not collide', async () => {
+			const a = await once('a', async () => 1);
+			const b = await once('b', async () => 2);
+			expect(a).toBe(1);
+			expect(b).toBe(2);
+			const session = readSession(sessionFile);
+			expect(session.steps).toEqual({ a: 1, b: 2 });
+		});
+
+		test('synchronous fn is supported', async () => {
+			const result = await once('sync', () => 'done');
+			expect(result).toBe('done');
+			expect(readSession(sessionFile).steps?.sync).toBe('done');
+		});
+
+		test('preserves existing answers in the session file', async () => {
+			writeSession({ version: 1, answers: { name: { value: 'Eduardo' } } }, sessionFile);
+			await once('step1', async () => 'v1');
+			const session = readSession(sessionFile);
+			expect(session.answers).toEqual({ name: { value: 'Eduardo' } });
+			expect(session.steps).toEqual({ step1: 'v1' });
+		});
+
+		test('cleanup on clean exit wipes both answers and steps (via prompt consumption)', async () => {
+			writeSession({ version: 1, answers: { q: { value: 'hi' } } }, sessionFile);
+			await once('step1', async () => 'v1');
+			// A prompt consumes the answer.
+			const p = new TextPrompt({
+				input,
+				output,
+				id: 'q',
+				agent: { message: 'A?' },
+				render: () => '',
+			});
+			await p.prompt();
+			expect(runCleanup(0)).toBe(true);
+			expect(existsSync(sessionFile)).toBe(false);
+		});
+
+		test('once() alone (no prompts) does not trigger cleanup on exit', async () => {
+			// No prompt consumption -> no markAnswerConsumed -> file survives.
+			await once('step1', async () => 'v1');
+			expect(existsSync(sessionFile)).toBe(true);
+			expect(runCleanup(0)).toBe(false);
+			expect(existsSync(sessionFile)).toBe(true);
+		});
+
+		test('honours opts.sessionFile override', async () => {
+			const custom = join(tmp, 'custom.json');
+			await once('k', async () => 'v', { sessionFile: custom });
+			expect(existsSync(custom)).toBe(true);
+			expect(readSession(custom).steps).toEqual({ k: 'v' });
+			// Default file should remain untouched.
 			expect(existsSync(sessionFile)).toBe(false);
 		});
 	});

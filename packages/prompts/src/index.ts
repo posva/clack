@@ -1,4 +1,11 @@
-export { type ClackSettings, isCancel, settings, updateSettings } from '@posva/clack-core';
+export {
+	type ClackSettings,
+	isCancel,
+	once,
+	type OnceOptions,
+	settings,
+	updateSettings,
+} from '@posva/clack-core';
 
 export * from './autocomplete.js';
 export * from './batch.js';
