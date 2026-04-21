@@ -12,14 +12,18 @@
     "types": "tsc --noEmit",
     "deps": "pnpm exec knip --production",
     "test": "pnpm --color -r run test",
-    "pretest": "pnpm run build"
+    "pretest": "pnpm run build",
+    "release": "node ./scripts/release.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.1.2",
     "@changesets/cli": "^2.29.5",
+    "@posva/clack-prompts": "workspace:*",
     "@types/node": "^24.1.0",
+    "conventional-changelog-cli": "^5.0.0",
     "jsr": "^0.13.4",
     "knip": "^5.62.0",
+    "semver": "^7.7.2",
     "typescript": "^5.8.3",
     "unbuild": "^3.6.0"
   },
