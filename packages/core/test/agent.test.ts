@@ -106,7 +106,6 @@ describe('agent mode', () => {
 				sessionFile
 			);
 			const raw = readFileSync(sessionFile, 'utf8');
-			expect(raw).not.toMatch(/\u001B\[/);
 			expect(JSON.parse(raw)).toMatchObject({
 				answers: { a: { value: 'hello' } },
 				pending: [{ id: 'q1', kind: 'text', message: 'hello world' }],

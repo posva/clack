@@ -3,7 +3,6 @@ import {
 	emitQuestions,
 	exit as coreExit,
 	getSessionFilePath,
-	isAgentMode,
 	markAnswerConsumed,
 	readSession,
 	writeSession,
