@@ -19,20 +19,46 @@ import { select, type SelectOptions } from './select.js';
 import { text, type TextOptions } from './text.js';
 
 /**
- * One entry in a `batch({ ... })` call. Built by the `batch.text` /
- * `batch.select` / ... helpers — do not construct manually.
+ * One entry inside a `batch({ ... })` call.
+ *
+ * Produced by the `batch.text` / `batch.select` / ... helpers — do not construct
+ * manually. Each item carries two lanes: `run()` for the interactive fallback
+ * (executed sequentially) and `describe()` for the agent-mode payload
+ * (collected and emitted together in a single block).
+ *
+ * @typeParam T - The value type returned when the prompt resolves. Threaded
+ *   through `BatchResult<T>` so the map returned by `batch()` stays typed per key.
  */
 export interface BatchItem<T> {
+	/**
+	 * Stable id used both as the session-file key and the wire-protocol id.
+	 * Required — there is no auto-counter fallback here.
+	 */
 	id: string;
-	/** Run the prompt interactively (fallback when not in agent mode). */
+	/**
+	 * Interactive fallback. Invoked once per item, in declaration order, when
+	 * agent mode is off.
+	 */
 	run: () => Promise<unknown>;
-	/** Build the agent-mode `AgentQuestion` payload. */
+	/**
+	 * Agent-mode payload builder. Called when the item is unanswered so its
+	 * question can be emitted alongside the others in a single block.
+	 */
 	describe: () => AgentQuestion;
-	/** Phantom for type inference of the answer's shape. Never set at runtime. */
+	/**
+	 * Phantom for type inference of the answer's shape. Never set at runtime.
+	 */
 	_valueType?: T;
 }
 
-/** Text input inside a batch. Same options as `text()` — `id` is required. */
+/**
+ * Wrap a `text()` prompt as a batch item.
+ *
+ * Accepts the full `TextOptions` surface; only `id` becomes mandatory because
+ * the batch protocol needs a stable key to map answers back onto the result.
+ *
+ * @see {@link batch} for how batch items are executed.
+ */
 export function batchText(opts: TextOptions & { id: string }): BatchItem<string> {
 	return {
 		id: opts.id,
@@ -49,6 +75,13 @@ export function batchText(opts: TextOptions & { id: string }): BatchItem<string>
 	};
 }
 
+/**
+ * Wrap a `password()` prompt as a batch item. Options mirror `password()`;
+ * `id` is required.
+ *
+ * The agent payload intentionally omits `placeholder`/default values to avoid
+ * inadvertently leaking hints about secret shape.
+ */
 export function batchPassword(opts: PasswordOptions & { id: string }): BatchItem<string> {
 	return {
 		id: opts.id,
@@ -62,6 +95,14 @@ export function batchPassword(opts: PasswordOptions & { id: string }): BatchItem
 	};
 }
 
+/**
+ * Wrap a `confirm()` prompt as a batch item. Options mirror `confirm()`;
+ * `id` is required.
+ *
+ * `active`/`inactive` default to `"Yes"`/`"No"` and `initialValue` defaults to
+ * `true` — these defaults are baked into the agent payload so the agent sees
+ * the same wording a human would.
+ */
 export function batchConfirm(opts: ConfirmOptions & { id: string }): BatchItem<boolean> {
 	return {
 		id: opts.id,
@@ -77,6 +118,15 @@ export function batchConfirm(opts: ConfirmOptions & { id: string }): BatchItem<b
 	};
 }
 
+/**
+ * Wrap a `select()` prompt as a batch item. Options mirror `select()`;
+ * `id` is required.
+ *
+ * `options` are serialized to `{ value, label, hint }` triples so the agent
+ * sees the same choices a human would — it then picks by `value`.
+ *
+ * @typeParam V - Value type of each option, inferred from `opts.options`.
+ */
 export function batchSelect<V>(opts: SelectOptions<V> & { id: string }): BatchItem<V> {
 	return {
 		id: opts.id,
@@ -91,6 +141,16 @@ export function batchSelect<V>(opts: SelectOptions<V> & { id: string }): BatchIt
 	};
 }
 
+/**
+ * Wrap a `multiselect()` prompt as a batch item. Options mirror `multiselect()`;
+ * `id` is required.
+ *
+ * `required` defaults to `true` (matches interactive behavior). The answer is
+ * an array of `value`s — the agent picks zero or more of the serialized
+ * options.
+ *
+ * @typeParam V - Value type of each option, inferred from `opts.options`.
+ */
 export function batchMultiselect<V>(opts: MultiSelectOptions<V> & { id: string }): BatchItem<V[]> {
 	return {
 		id: opts.id,
@@ -106,6 +166,16 @@ export function batchMultiselect<V>(opts: MultiSelectOptions<V> & { id: string }
 	};
 }
 
+/**
+ * Wrap an `autocomplete()` prompt as a batch item. Options mirror
+ * `autocomplete()`; `id` is required.
+ *
+ * When `opts.options` is a function (dynamic options), the agent payload sets
+ * `dynamicOptions: true` and omits the option list — the agent is expected to
+ * provide a free-form `value`, which the CLI validates on re-run.
+ *
+ * @typeParam V - Value type of each option, inferred from `opts.options`.
+ */
 export function batchAutocomplete<V>(opts: AutocompleteOptions<V> & { id: string }): BatchItem<V> {
 	return {
 		id: opts.id,
@@ -126,6 +196,14 @@ export function batchAutocomplete<V>(opts: AutocompleteOptions<V> & { id: string
 	};
 }
 
+/**
+ * Wrap a `multiline()` prompt as a batch item. Options mirror `multiline()`;
+ * `id` is required.
+ *
+ * The agent-mode payload's `kind` is `"multi-line"` (hyphenated) to match the
+ * protocol; the wrapper function keeps the concatenated `multiline` spelling
+ * for ergonomic imports.
+ */
 export function batchMultiline(opts: MultiLineOptions & { id: string }): BatchItem<string> {
 	return {
 		id: opts.id,
@@ -143,6 +221,14 @@ export function batchMultiline(opts: MultiLineOptions & { id: string }): BatchIt
 	};
 }
 
+/**
+ * Wrap a `date()` prompt as a batch item. Options mirror `date()`; `id` is
+ * required.
+ *
+ * `Date` values are serialized to ISO 8601 strings in the agent payload and
+ * the accepted answer format (`YYYY-MM-DD` or a full ISO timestamp) is
+ * advertised via `valueFormat`, so the agent knows what to write back.
+ */
 export function batchDate(opts: DateOptions & { id: string }): BatchItem<Date> {
 	return {
 		id: opts.id,
@@ -162,6 +248,11 @@ export function batchDate(opts: DateOptions & { id: string }): BatchItem<Date> {
 	};
 }
 
+/**
+ * Type-level mapper from the shape passed to `batch({ ... })` to the shape of
+ * its resolved result. Each value becomes the answer type of the corresponding
+ * prompt, or `symbol` when the user cancels.
+ */
 type BatchResult<T extends Record<string, BatchItem<unknown>>> = {
 	[K in keyof T]: T[K] extends BatchItem<infer V> ? V | symbol : never;
 };
@@ -169,15 +260,30 @@ type BatchResult<T extends Record<string, BatchItem<unknown>>> = {
 /**
  * Run several prompts whose answers DO NOT depend on each other.
  *
- * In interactive mode, prompts run sequentially (same effective behavior as `group()`
- * for independent questions).
+ * Interactive mode: prompts run sequentially, one after the other — the same
+ * effective behavior as `group()` for independent questions.
  *
- * In agent mode, all unanswered questions are emitted as a single NDJSON `questions`
- * payload on stdout, then the process exits with code 2 so the agent can fill them in
- * one round-trip.
+ * Agent mode: every unanswered question is emitted as a single block on stdout
+ * (one JSON object per line), then the process exits with code `2`. The agent
+ * edits `.clack-session.json` to provide answers and re-runs the CLI; already
+ * answered items resolve instantly on the next invocation.
  *
- * Each batch item REQUIRES an `id` — no auto-counter fallback here, because the batch
- * shape is the protocol contract and stable ids are essential.
+ * Each batch item REQUIRES an `id` — there is no `auto:<n>` fallback here,
+ * because the batch shape is the protocol contract and stable ids are
+ * essential for mapping answers back onto the right key.
+ *
+ * @example
+ * ```ts
+ * const basics = await batch({
+ *   path: batch.text({ id: 'path', message: 'Where?' }),
+ *   install: batch.confirm({ id: 'install', message: 'Install deps?' }),
+ * });
+ * // basics: { path: string | symbol; install: boolean | symbol }
+ * ```
+ *
+ * @typeParam T - Map of keys to batch items; keys are preserved in the result.
+ * @param items - Object whose values are built by `batch.text`, `batch.select`, etc.
+ * @returns Promise resolving to a map of `{ key: value }` for each answered prompt.
  */
 export async function batch<T extends Record<string, BatchItem<unknown>>>(
 	items: T
@@ -220,8 +326,6 @@ export async function batch<T extends Record<string, BatchItem<unknown>>>(
 	writeSession(session, sessionPath);
 	emitQuestions(unanswered, { sessionFile: sessionPath });
 	coreExit(2);
-	// Unreachable; `coreExit` terminates the process.
-	return {} as BatchResult<T>;
 }
 
 batch.text = batchText;
