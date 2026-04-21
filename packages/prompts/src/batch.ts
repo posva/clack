@@ -18,42 +18,24 @@ import type { Option } from './select.js';
 import { select, type SelectOptions } from './select.js';
 import { text, type TextOptions } from './text.js';
 
-type BatchKind =
-	| 'text'
-	| 'password'
-	| 'confirm'
-	| 'select'
-	| 'multiselect'
-	| 'autocomplete'
-	| 'multiline'
-	| 'date';
-
-interface BatchDescriptorBase {
-	__clackBatch: true;
-	kind: BatchKind;
+/**
+ * One entry in a `batch({ ... })` call. Built by the `batch.text` /
+ * `batch.select` / ... helpers — do not construct manually.
+ */
+export interface BatchItem<T> {
 	id: string;
-	opts: Record<string, unknown>;
 	/** Run the prompt interactively (fallback when not in agent mode). */
 	run: () => Promise<unknown>;
 	/** Build the agent-mode `AgentQuestion` payload. */
 	describe: () => AgentQuestion;
-}
-
-export interface BatchItem<T> extends BatchDescriptorBase {
+	/** Phantom for type inference of the answer's shape. Never set at runtime. */
 	_valueType?: T;
-}
-
-function asBatch<T>(descriptor: BatchDescriptorBase): BatchItem<T> {
-	return descriptor as BatchItem<T>;
 }
 
 /** Text input inside a batch. Same options as `text()` — `id` is required. */
 export function batchText(opts: TextOptions & { id: string }): BatchItem<string> {
-	return asBatch<string>({
-		__clackBatch: true,
-		kind: 'text',
+	return {
 		id: opts.id,
-		opts,
 		run: () => text(opts),
 		describe: () => ({
 			id: opts.id,
@@ -64,15 +46,12 @@ export function batchText(opts: TextOptions & { id: string }): BatchItem<string>
 			initialValue: opts.initialValue,
 			required: opts.validate !== undefined,
 		}),
-	});
+	};
 }
 
 export function batchPassword(opts: PasswordOptions & { id: string }): BatchItem<string> {
-	return asBatch<string>({
-		__clackBatch: true,
-		kind: 'password',
+	return {
 		id: opts.id,
-		opts,
 		run: () => password(opts),
 		describe: () => ({
 			id: opts.id,
@@ -80,35 +59,27 @@ export function batchPassword(opts: PasswordOptions & { id: string }): BatchItem
 			message: opts.message,
 			required: opts.validate !== undefined,
 		}),
-	});
+	};
 }
 
 export function batchConfirm(opts: ConfirmOptions & { id: string }): BatchItem<boolean> {
-	const active = opts.active ?? 'Yes';
-	const inactive = opts.inactive ?? 'No';
-	return asBatch<boolean>({
-		__clackBatch: true,
-		kind: 'confirm',
+	return {
 		id: opts.id,
-		opts,
 		run: () => confirm(opts),
 		describe: () => ({
 			id: opts.id,
 			kind: 'confirm',
 			message: opts.message,
-			active,
-			inactive,
+			active: opts.active ?? 'Yes',
+			inactive: opts.inactive ?? 'No',
 			initialValue: opts.initialValue ?? true,
 		}),
-	});
+	};
 }
 
 export function batchSelect<V>(opts: SelectOptions<V> & { id: string }): BatchItem<V> {
-	return asBatch<V>({
-		__clackBatch: true,
-		kind: 'select',
+	return {
 		id: opts.id,
-		opts,
 		run: () => select(opts),
 		describe: () => ({
 			id: opts.id,
@@ -117,16 +88,12 @@ export function batchSelect<V>(opts: SelectOptions<V> & { id: string }): BatchIt
 			options: serializeOptions(opts.options as Option<V>[]),
 			initialValue: opts.initialValue,
 		}),
-	});
+	};
 }
 
 export function batchMultiselect<V>(opts: MultiSelectOptions<V> & { id: string }): BatchItem<V[]> {
-	const required = opts.required ?? true;
-	return asBatch<V[]>({
-		__clackBatch: true,
-		kind: 'multiselect',
+	return {
 		id: opts.id,
-		opts,
 		run: () => multiselect(opts),
 		describe: () => ({
 			id: opts.id,
@@ -134,17 +101,14 @@ export function batchMultiselect<V>(opts: MultiSelectOptions<V> & { id: string }
 			message: opts.message,
 			options: serializeOptions(opts.options as Option<V>[]),
 			initialValues: opts.initialValues,
-			required,
+			required: opts.required ?? true,
 		}),
-	});
+	};
 }
 
 export function batchAutocomplete<V>(opts: AutocompleteOptions<V> & { id: string }): BatchItem<V> {
-	return asBatch<V>({
-		__clackBatch: true,
-		kind: 'autocomplete',
+	return {
 		id: opts.id,
-		opts,
 		run: () => autocomplete(opts),
 		describe: () => ({
 			id: opts.id,
@@ -159,15 +123,12 @@ export function batchAutocomplete<V>(opts: AutocompleteOptions<V> & { id: string
 			initialValue: opts.initialValue,
 			required: opts.validate !== undefined,
 		}),
-	});
+	};
 }
 
 export function batchMultiline(opts: MultiLineOptions & { id: string }): BatchItem<string> {
-	return asBatch<string>({
-		__clackBatch: true,
-		kind: 'multiline',
+	return {
 		id: opts.id,
-		opts,
 		run: () => multiline(opts),
 		describe: () => ({
 			id: opts.id,
@@ -179,15 +140,12 @@ export function batchMultiline(opts: MultiLineOptions & { id: string }): BatchIt
 			showSubmit: opts.showSubmit,
 			required: opts.validate !== undefined,
 		}),
-	});
+	};
 }
 
 export function batchDate(opts: DateOptions & { id: string }): BatchItem<Date> {
-	return asBatch<Date>({
-		__clackBatch: true,
-		kind: 'date',
+	return {
 		id: opts.id,
-		opts,
 		run: () => date(opts),
 		describe: () => ({
 			id: opts.id,
@@ -201,7 +159,7 @@ export function batchDate(opts: DateOptions & { id: string }): BatchItem<Date> {
 			maxDate: opts.maxDate?.toISOString(),
 			valueFormat: 'ISO 8601 date string (YYYY-MM-DD) or full ISO timestamp',
 		}),
-	});
+	};
 }
 
 type BatchResult<T extends Record<string, BatchItem<unknown>>> = {
@@ -234,7 +192,6 @@ export async function batch<T extends Record<string, BatchItem<unknown>>>(
 		return result as BatchResult<T>;
 	}
 
-	// Agent mode: check session file for all answers.
 	const sessionPath = getSessionFilePath();
 	const session = readSession(sessionPath);
 	const unanswered: AgentQuestion[] = [];
