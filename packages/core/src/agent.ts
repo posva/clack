@@ -105,6 +105,8 @@ let _counter = 0;
  *
  * Prefer passing a stable `id` in production: branching flows can shift the
  * positional counter, which silently invalidates previously cached answers.
+ *
+ * @internal
  */
 export function nextAutoId(): string {
 	const n = _counter++;
@@ -114,6 +116,8 @@ export function nextAutoId(): string {
 /**
  * Reset the positional id counter back to zero. Used by tests between runs
  * and by the runtime at process start.
+ *
+ * @internal
  */
 export function resetAutoIdCounter(): void {
 	_counter = 0;
@@ -129,6 +133,8 @@ export function resetAutoIdCounter(): void {
  *
  * Relative paths are resolved against `process.cwd()` so the same CLI
  * invocation from different working directories stays deterministic.
+ *
+ * @internal
  */
 export function getSessionFilePath(): string {
 	const p = env.CLACK_AGENT_FILE;
@@ -150,10 +156,7 @@ let _agentModeOverride: boolean | undefined;
  *   - `CLACK_AGENT=0` (or `false`) — explicit opt-out.
  *   - `std-env`'s `isTest` is true (vitest/jest/etc.) and no explicit opt-in is set —
  *     prevents test suites from entering agent mode just because the runner is
- *     invoked by an agent harness. Tests that want to exercise agent mode should
- *     call `setAgentMode(true)`.
- *
- * Can be forced on/off programmatically via `setAgentMode()` (used by tests).
+ *     invoked by an agent harness.
  */
 export function isAgentMode(): boolean {
 	if (_agentModeOverride !== undefined) return _agentModeOverride;
@@ -188,6 +191,8 @@ export function isAgentMode(): boolean {
  *
  * Pass `undefined` to clear the override and fall back to auto-detection as
  * documented on {@link isAgentMode}.
+ *
+ * @internal
  */
 export function setAgentMode(value: boolean | undefined): void {
 	_agentModeOverride = value;
@@ -207,6 +212,8 @@ function emptySession(): AgentSessionFile {
  *
  * @param path - Override the session-file path. Defaults to {@link getSessionFilePath}.
  * @returns The parsed session, or a fresh empty one if nothing valid was on disk.
+ *
+ * @internal
  */
 export function readSession(path: string = getSessionFilePath()): AgentSessionFile {
 	if (!existsSync(path)) return emptySession();
@@ -230,6 +237,8 @@ export function readSession(path: string = getSessionFilePath()): AgentSessionFi
  * sequences are stripped from string values so the file stays plain-text
  * readable even when callers pass styled prompt messages. Parent directories
  * are created as needed.
+ *
+ * @internal
  */
 export function writeSession(session: AgentSessionFile, path: string = getSessionFilePath()): void {
 	mkdirSync(dirname(path), { recursive: true });
@@ -242,6 +251,8 @@ export function writeSession(session: AgentSessionFile, path: string = getSessio
  * @param id - The prompt id to look up in `answers`.
  * @param path - Optional override for the session-file path.
  * @returns The answer entry if present, otherwise `undefined`.
+ *
+ * @internal
  */
 export function getAnswer(id: string, path?: string): AgentAnswerEntry | undefined {
 	const s = readSession(path);
@@ -386,6 +397,8 @@ interface EmitContext {
  * The emitted block contains a human-readable instruction, the question as a
  * single line of JSON (so the agent can parse it directly), and a hint about
  * the expected answer shape. Paired with `process.exit(2)` by the caller.
+ *
+ * @internal
  */
 export function emitQuestion(question: AgentQuestion, ctx: EmitContext = {}): void {
 	const sessionFile = ctx.sessionFile ?? getSessionFilePath();
@@ -405,6 +418,8 @@ export function emitQuestion(question: AgentQuestion, ctx: EmitContext = {}): vo
  * Emit several pending questions on stdout as a single NDJSON-style block —
  * one JSON object per line — so the agent can answer them all in one edit of
  * the session file. Used by `batch()` to collapse `n` round-trips into one.
+ *
+ * @internal
  */
 export function emitQuestions(questions: AgentQuestion[], ctx: EmitContext = {}): void {
 	const sessionFile = ctx.sessionFile ?? getSessionFilePath();
@@ -425,6 +440,8 @@ export function emitQuestions(questions: AgentQuestion[], ctx: EmitContext = {})
  * Emit a validation-error block to stdout. Paired with `process.exit(3)` on
  * the caller side so the agent can distinguish "bad answer, try again" from
  * "new question, come back later" (exit 2).
+ *
+ * @internal
  */
 export function emitError(id: string, message: string, ctx: EmitContext = {}): void {
 	writeBlock(ctx.output, `Invalid answer for "${id}": ${message}`);
@@ -434,6 +451,8 @@ export function emitError(id: string, message: string, ctx: EmitContext = {}): v
  * Emit a tagged log line — the agent-mode counterpart to the `log.*` helpers
  * (`log.info`, `log.success`, ...). Each line is prefixed with `[<level>]` so
  * the agent can classify output without parsing ANSI.
+ *
+ * @internal
  */
 export function emitLog(
 	level: 'info' | 'success' | 'warn' | 'error' | 'step' | 'message',
@@ -447,6 +466,8 @@ export function emitLog(
  * Emit a `[task:start]` / `[task:stop]` / `[task:error]` marker for
  * spinner/progress tasks. Agents use the matched start/stop pair to track
  * long-running operations without rendering animation frames.
+ *
+ * @internal
  */
 export function emitTask(
 	phase: 'start' | 'stop' | 'error',
@@ -461,6 +482,8 @@ export function emitTask(
  * Persist the given questions to `session.pending`. Purely informational —
  * it records what was last emitted so humans / tooling can inspect the
  * session file, but the CLI does not consume it on re-run.
+ *
+ * @internal
  */
 export function stashPending(questions: AgentQuestion[], path: string = getSessionFilePath()): void {
 	const session = readSession(path);
@@ -480,6 +503,8 @@ let _cleanupHookRegistered = false;
  * Record that a prompt in this process successfully consumed an answer from the
  * session file. Lazily registers the `process.on('exit', ...)` cleanup hook so
  * the file is deleted on a clean exit (see `registerCleanupHook`).
+ *
+ * @internal
  */
 export function markAnswerConsumed(): void {
 	_consumedAnswer = true;
@@ -491,6 +516,8 @@ export function markAnswerConsumed(): void {
  *
  * Defaults to `true`. Tests flip this off when they want to inspect the
  * session file after a simulated run.
+ *
+ * @internal
  */
 export function setCleanupOnExit(value: boolean): void {
 	_cleanupOnExit = value;
@@ -500,6 +527,8 @@ export function setCleanupOnExit(value: boolean): void {
  * Reset all cleanup-tracking module state to its defaults.
  *
  * Intended for test isolation only — production code should not need this.
+ *
+ * @internal
  */
 export function resetCleanupState(): void {
 	_consumedAnswer = false;
@@ -510,6 +539,8 @@ export function resetCleanupState(): void {
  * Run cleanup logic (invoked by the `process.on('exit')` hook, but also callable
  * directly for tests). Deletes the session file iff all gating conditions hold.
  * Returns true if the file was removed.
+ *
+ * @internal
  */
 export function runCleanup(code: number): boolean {
 	if (code !== 0) return false;
@@ -548,6 +579,8 @@ let _exit: (code: number) => never = ((code: number): never => {
  * Always prefer this over `process.exit()` inside agent-mode code paths — it
  * goes through the replaceable indirection so tests can intercept exits
  * without the test runner itself being killed.
+ *
+ * @internal
  */
 export function exit(code: number): never {
 	return _exit(code);
@@ -557,6 +590,8 @@ export function exit(code: number): never {
  * Replace the underlying exit implementation. Tests pass a stub that throws,
  * so "assertions on the exit code" become "assertions on the thrown error"
  * — letting vitest observe the behavior instead of terminating the suite.
+ *
+ * @internal
  */
 export function setExit(fn: (code: number) => never): void {
 	_exit = fn;

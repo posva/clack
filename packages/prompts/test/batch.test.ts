@@ -2,11 +2,11 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
+	_resetAutoIdCounter,
+	_resetCleanupState,
+	_setAgentMode,
+	_setExit,
 	readSession,
-	resetAutoIdCounter,
-	resetCleanupState,
-	setAgentMode,
-	setExit,
 	writeSession,
 } from '@posva/clack-core';
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
@@ -32,13 +32,13 @@ describe('batch() agent mode', () => {
 		tmp = mkdtempSync(join(tmpdir(), 'clack-batch-'));
 		sessionFile = join(tmp, 'session.json');
 		process.env.CLACK_AGENT_FILE = sessionFile;
-		setAgentMode(true);
-		resetAutoIdCounter();
-		resetCleanupState();
+		_setAgentMode(true);
+		_resetAutoIdCounter();
+		_resetCleanupState();
 		output = new MockWritable();
 		input = new MockReadable();
 		exitCalls = [];
-		setExit(((code: number) => {
+		_setExit(((code: number) => {
 			exitCalls.push(code);
 			throw new Error(`__exit:${code}`);
 		}) as () => never);
@@ -46,8 +46,8 @@ describe('batch() agent mode', () => {
 
 	afterEach(() => {
 		delete process.env.CLACK_AGENT_FILE;
-		setAgentMode(undefined);
-		setExit(((code: number) => process.exit(code)) as () => never);
+		_setAgentMode(undefined);
+		_setExit(((code: number) => process.exit(code)) as () => never);
 		rmSync(tmp, { recursive: true, force: true });
 	});
 

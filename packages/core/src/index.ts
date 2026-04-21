@@ -1,29 +1,19 @@
-export type {
-	AgentAnswerEntry,
-	AgentQuestion,
-	AgentQuestionKind,
-	AgentSessionFile,
-	OnceOptions,
-} from './agent.js';
+export type { AgentQuestion, OnceOptions } from './agent.js';
 export {
-	emitError,
 	emitLog,
-	emitQuestion,
 	emitQuestions,
 	emitTask,
 	exit,
-	getAnswer,
 	getSessionFilePath,
 	isAgentMode,
 	markAnswerConsumed,
 	once,
 	readSession,
-	resetAutoIdCounter,
-	resetCleanupState,
-	runCleanup,
-	setAgentMode,
-	setCleanupOnExit,
-	setExit,
+	resetAutoIdCounter as _resetAutoIdCounter,
+	resetCleanupState as _resetCleanupState,
+	setAgentMode as _setAgentMode,
+	setCleanupOnExit as _setCleanupOnExit,
+	setExit as _setExit,
 	writeSession,
 } from './agent.js';
 export type { AutocompleteOptions } from './prompts/autocomplete.js';
