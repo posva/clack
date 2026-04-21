@@ -17,13 +17,13 @@
   "types": "./dist/index.d.mts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bombshell-dev/clack.git",
+    "url": "git+https://github.com/posva/clack.git",
     "directory": "packages/prompts"
   },
   "bugs": {
-    "url": "https://github.com/bombshell-dev/clack/issues"
+    "url": "https://github.com/posva/clack/issues"
   },
-  "homepage": "https://github.com/bombshell-dev/clack/tree/main/packages/prompts#readme",
+  "homepage": "https://github.com/posva/clack/tree/main/packages/prompts#readme",
   "files": [
     "dist",
     "CHANGELOG.md"
